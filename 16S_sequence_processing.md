@@ -1,6 +1,44 @@
 ```bash
-# Remove singletons
-wc -l mp_16S.otu
+
+# Experimenting with PANDASEQ
+# Manual trimming based on quality is required. This protocol was effective with MiSEQ using 2x250 reads.
+
+# Assemble with PANDASEQ
+ls *.fastq.gz | perl -pe 's/_R.*.fastq.gz//g' | sort | uniq >list # Generate the list
+ln -s scripts/assemblyPANDA.sh assemblyPANDA.sh # Create a symbolic link to the PANDASEQ assembly script
+bash assemblyPANDA.sh JOB_NAME # Run the script that generates assembly jobs using PANDASEQ (pre-requisite)
+for N in `ls *.scr`; do qsub $N; done # Submit the assembly jobs to the cluster
+
+# Rename sequences with simple identifiers (see label section)
+# Rename sequences with identifiers using the sequence name and number them:
+# >Sequence_0 
+# ATTAC
+# >Sequence_1
+# TTCAT
+# >Sequence_2
+# CCTAT
+
+# Perform this step for each sample with individual labels per sample
+perl scripts/header.fasta.numbers.pl PREFIX file_name.fasta 
+
+# Concatenate all samples from the study
+cat *.numbered.fasta >complete_study.fas
+
+# Group sequences at 97% identity
+# If using the deep-thought cluster, use the parallelization script
+# If using the cuallicua cluster, use the script directly but submit via the queue manager (qsub)
+
+# On deep-thought:
+ln -s scripts/cd-clust.sh . 
+bash cd-clust.sh complete_study.fas
+
+# On cuallicua:
+qsub -N JOB_NAME -b y -j y -cwd -V "cd-hit-est -c 0.97 -T 25 -M 0 -i complete_study.fas -o output.clstr"
+
+# Generate OTU table
+perl -pne 's/\t//g;s/^.*,//g;s/\.\.\..*$//g;s/\n/\t/g; s/\>Cluster\ /\n/g;s/\>//g; eof && do{chomp; print "$_ \n"' ; exit}' output.clstr.clstr >mp_16s.otu
+
+
 
 # Command to remove singletons from the OTU file
 awk 'NF < 3' mp_16S.otu | cut -f1 >ids_REMOVE_singletons.txt
