@@ -6,7 +6,7 @@ if len(sys.argv[1:]) == 0:
 """
 Genera una tabla a partir de clusters
 usage: python3 otu_tab.py muestras.txt clusters.otu
-Miguel Romero github.com/romeromig
+Modified from the original script of: Miguel Romero github.com/romeromig
 """
 )
     sys.exit()
