@@ -459,7 +459,7 @@ taximat = as.matrix(read.table("taxglom_protein_tax_table.tsv", header=T, row.na
 taxi=tax_table(taximat)
 tom_all= phyloseq(OTU, taxi)
 sample_names(tom_all)
-data= read.table("metada_fen.csv", header=T, row.names=1, sep=",")
+data= read.table("metada.csv", header=T, row.names=1, sep=",")
 sampledata = sample_data(data.frame(sample=data$sample,subid=data$subsam, type=data$type,
                                     ID=data$ID, substratum=data$substratum, 
                                     row.names=sample_names(tom_all)))
